@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Portifolio.API;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +17,20 @@ app.UseHttpsRedirection();
 app.UseCors(p => p.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
 
-app.MapPost("/", (Contact contact) =>
+app.MapPost("/contacts", async (PortifolioContext context, Contact contact) =>
 {
-   
-})
+   await context.Contacts.AddAsync(contact);
+    await context.SaveChangesAsync();
 
-.WithOpenApi();
+    return Results.Ok(contact);
+
+}).WithOpenApi();
+
+app.MapGet("/contacts", async (PortifolioContext context) => 
+{ 
+    var contacts = await context.Contacts.ToListAsync();
+    return Results.Ok(contacts);
+}).WithOpenApi();
 
 app.Run();
 
